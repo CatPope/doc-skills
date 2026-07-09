@@ -10,6 +10,7 @@
 |------|------|
 | [`hwpx-table-kit`](skills/hwpx-table-kit) | 기존 한글 `.hwpx` 문서를 손상시키지 않고 편집 가능한 OWPML 표를 삽입합니다. 재사용 엔진. |
 | [`hwpx-image-table-to-table`](skills/hwpx-image-table-to-table) | 레시피: `.hwpx` 안에 **이미지로 들어간 표**를 실제 편집 가능한 표로 변환합니다(필요 시 `.xlsx`에서 데이터 추출). `hwpx-table-kit`을 사용합니다. |
+| [`portable-skill-authoring`](skills/portable-skill-authoring) | 메타: 노 베이스 에이전트가 clone만으로 쓸 수 있는 **이식성 높은 스킬을 작성**하는 규칙 + 표준 라이브러리 전용 검증기(`check_skill.py`) + 템플릿. |
 
 ## 빠른 시작 (어떤 에이전트든, 사전 설정 불필요)
 
