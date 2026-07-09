@@ -1,0 +1,8 @@
+node_modules/
+__pycache__/
+*.pyc
+package-lock.json
+# local test artifacts
+*_변환.hwpx
+*_out.hwpx
+/tmp/
