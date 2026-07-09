@@ -1,8 +1,23 @@
 # doc-skills
 
 문서 편집 작업을 위한 이식성 높은 [Agent Skills](https://skills.sh) 모음입니다.
-한글 `.hwpx`부터 시작해 **다양한 종류의 문서 편집 스킬**이 계속 추가됩니다. 각 스킬은
-**자기완결형**이라 다른 스킬·플러그인·프레임워크가 없어도 동작합니다.
+한글 `.hwpx`부터 시작해 **다양한 종류의 문서 편집 스킬**이 계속 추가됩니다.
+여러 문서·스킬에 공통으로 쓰이는 로직은 `shared/` **공용 레이어**로 추상화하고,
+각 스킬은 그 위에서 자기 역할만 담당합니다. 자기완결·자기부트스트랩의 단위는
+개별 폴더가 아니라 **레포 전체**이며, 다른 플러그인·프레임워크 없이 clone만 하면
+동작합니다.
+
+## 구조
+
+```
+doc-skills/
+  skills/     # 개별 문서 작업 스킬 (SKILL.md + 스킬 고유 로직)
+  shared/     # 여러 스킬이 공유하는 공용 모듈 (포맷 무관 유틸)
+```
+
+스킬은 하드코딩 경로 없이 레포 루트를 탐색해 `shared/`를 참조합니다(자세한 규칙은
+[`portable-skill-authoring`](skills/portable-skill-authoring) 참고). 스킬 문서는
+영어로 작성합니다.
 
 ## 스킬 목록
 
@@ -30,13 +45,15 @@ git clone https://github.com/CatPope/doc-skills.git
 
 ## Claude Code / Claude 에이전트에서 사용하기
 
-에이전트가 스킬 폴더를 바라보게 하거나, 스킬 디렉터리에 설치하세요:
+스킬이 `shared/` 공용 레이어에 의존할 수 있으므로, **개별 스킬 폴더만 복사하지
+말고 레포 전체**를 두고 에이전트가 그 경로를 바라보게 하세요. 스킬 디렉터리에
+설치할 때도 레포째로 두는 방식을 권장합니다:
 
 ```bash
-# 사용자 레벨(모든 프로젝트)
-cp -r skills/* ~/.claude/skills/
+# 레포 전체를 스킬 경로 아래에 클론 (shared/까지 함께 유지)
+git clone https://github.com/CatPope/doc-skills.git ~/.claude/skills/doc-skills
 # 또는 프로젝트 레벨
-cp -r skills/* .claude/skills/
+git clone https://github.com/CatPope/doc-skills.git .claude/skills/doc-skills
 ```
 
 배포 등록 후에는 Skills CLI로도 설치할 수 있습니다:
@@ -60,11 +77,17 @@ cp -r skills/* .claude/skills/
 ## 기여 / 새 스킬 추가
 
 새 문서 편집 스킬을 추가할 때는 [`portable-skill-authoring`](skills/portable-skill-authoring)의
-규칙을 따르고, 커밋 전에 이식성 검증기를 통과시키세요:
+규칙을 따르세요. 요약:
 
-```bash
-python skills/portable-skill-authoring/scripts/check_skill.py skills/
-```
+- **스킬은 영어로 작성**합니다(사용자 트리거 용어는 원어 병기 가능).
+- 공통 로직은 스킬마다 복제하지 말고 `shared/`로 **추상화**합니다.
+- 커밋 전에 이식성 검증기를 통과시킵니다:
+
+  ```bash
+  python skills/portable-skill-authoring/scripts/check_skill.py skills/
+  ```
+
+- 원격 반영은 `main` 직접 푸시가 아니라 **PR**로 올립니다(스킬 + 문서 갱신 한 커밋).
 
 ## 라이선스
 

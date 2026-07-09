@@ -22,41 +22,69 @@ making skills." It bundles a **standard-library-only** linter
 - You are splitting a job into an engine skill + a recipe skill.
 - You want to verify an existing skill is still portable before committing.
 
-## The three rules (why this skill exists)
+## The rules (why this skill exists)
 
 1. **No-base compatible.** Assume the agent has *no other skills and no
-   plugins*. Everything the skill needs is inside its own folder and reachable
-   from its `SKILL.md`. Never say "use the X skill" unless X is a sibling in
-   the same repo and you say so explicitly.
-2. **Self-bootstrapping from a clone.** After `git clone`, running the skill's
-   `setup.sh` (or `setup.ps1`) is the *only* manual step. It installs every
-   dependency. No hidden global state, no hardcoded machine paths, no
+   plugins* — nothing beyond a `git clone` of this repo. The **repo** is the
+   self-contained unit, not each folder: a skill needs only its own folder plus
+   the repo's `shared/` layer, all reachable from its `SKILL.md`. Never say
+   "use the X skill" unless X is a sibling in the same repo and you say so.
+2. **Abstract the common layer; don't duplicate.** Logic that is generic across
+   documents or reused by two or more skills (OPC/ZIP container handling, XML
+   assembly, unit/color conversion, a verification harness) belongs in the
+   repo-root `shared/`, not copied into each skill. Keep only the skill-specific
+   logic in `skills/<name>/`. Promote code to `shared/` when the *second* user
+   appears — don't abstract speculatively. Skills reach `shared/` without any
+   hardcoded path by copying `templates/repo_root.py` into their `scripts/`:
+
+   ```python
+   import sys, os
+   sys.path.insert(0, os.path.dirname(__file__))
+   from repo_root import shared_path
+   sys.path.insert(0, shared_path(__file__))
+   import opc          # <repo>/shared/opc.py
+   ```
+
+3. **Self-bootstrapping from a clone.** After `git clone`, running the skill's
+   `setup.sh` (or `setup.ps1`) is the *only* manual step, and it installs every
+   dependency (including the shared layer's, e.g. `-r ../../shared/requirements.txt`
+   when present). No hidden global state, no hardcoded machine paths, no
    pre-existing virtualenv. Prefer the standard library; when a dep is truly
    needed, pin it in `requirements.txt` / `package.json` so setup installs it.
-3. **Split when it clarifies reuse.** A reusable engine (does the mechanical
+4. **Split when it clarifies reuse.** A reusable engine (does the mechanical
    work) and a recipe (the human-facing procedure that drives the engine) are
    two skills, side by side in the repo. See `hwpx-table-kit` (engine) +
-   `hwpx-image-table-to-table` (recipe).
+   `hwpx-image-table-to-table` (recipe). Truly format-agnostic pieces go one
+   level deeper — into `shared/`.
 
 ## How to author a skill (procedure)
 
 1. **Copy the template.** Start from `templates/SKILL.template.md`,
    `templates/setup.sh`, `templates/setup.ps1`, `templates/requirements.txt`.
    Put them under `skills/<your-name>/`.
-2. **Write the frontmatter.** `name:` must equal the directory name.
-   `description:` is what the agent keyword-matches on — spell out the triggers
-   in both English and the target language, and end with the no-base note.
-3. **Bundle scripts, declare deps.** Any third-party import goes in
-   `requirements.txt`. Keep scripts self-contained and path-relative
-   (`os.path.dirname(__file__)`, `cd "$(dirname "$0")"`, `$PSScriptRoot`).
-4. **Ensure LF endings** for `*.sh`. Add the `templates/gitattributes.snippet`
+2. **Write the frontmatter — in English.** Author every skill (its `SKILL.md`
+   and all bundled files) **in English**, so any agent can consume it. `name:`
+   must equal the directory name. `description:` is what the agent
+   keyword-matches on — write it in English but still include the
+   target-language trigger terms a user would type (e.g. `한글 문서`, `.hwpx`),
+   and end with the no-base note.
+3. **Reuse before you write.** Check `shared/` first — if the mechanical piece
+   you need is already there, import it (copy `templates/repo_root.py` into your
+   `scripts/`). If your new logic is generic enough that another format would
+   want it, put it in `shared/` and import it back, rather than in the skill.
+4. **Bundle scripts, declare deps.** Any third-party import goes in
+   `requirements.txt` (or `shared/requirements.txt` for shared code). Keep
+   scripts path-relative (`os.path.dirname(__file__)`, `cd "$(dirname "$0")"`,
+   `$PSScriptRoot`) and let `repo_root.py` locate `shared/`.
+5. **Ensure LF endings** for `*.sh`. Add the `templates/gitattributes.snippet`
    lines to the repo-root `.gitattributes` (CRLF breaks `bash setup.sh`).
-5. **Update the docs.** Adding or changing a skill is not finished until the
+6. **Update the docs.** Adding or changing a skill is not finished until the
    repo docs reflect it: add a row to the README skill list (and update its
    quick-start / requirements if the new skill changes them), and refresh any
-   index the repo keeps. Keep the skill's own `SKILL.md` in sync too.
-6. **Validate — this is a required gate, not optional (see below).**
-7. **Only after it passes:** commit and push.
+   index the repo keeps (e.g. `shared/README.md` if you added a shared module).
+   Keep the skill's own `SKILL.md` in sync too.
+7. **Validate — this is a required gate, not optional (see below).**
+8. **Only after it passes:** commit and push.
 
 ## Validate before you finish (required)
 
@@ -99,16 +127,29 @@ confirm** it looks right.
 | `templates/SKILL.template.md` | starting point for a new `SKILL.md` |
 | `templates/setup.sh` / `setup.ps1` | cross-platform self-bootstrap scripts |
 | `templates/requirements.txt` | where to pin Python deps |
+| `templates/repo_root.py` | stdlib resolver a skill copies in to import `shared/` without hardcoded paths |
 | `templates/gitattributes.snippet` | LF/CRLF rules to paste into repo `.gitattributes` |
 
-## Commit / push discipline
+## Commit / publish discipline (via PR)
 
 Author and verify in one pass; **publish only after the gate is green.** Do not
 push a half-written skill or a skill that fails the linter. A change is
-"complete" only when (a) the docs are updated (step 5) and (b) the linter
-reports all skills passing. Then commit the skill **together with the doc
-update** in the same push — never leave the README describing a different set
-of skills than the repo ships.
+"complete" only when (a) the docs are updated (step 6) and (b) the linter
+reports all skills passing.
+
+**Publish through a pull request — never push straight to `main`.** Once the
+change is complete:
+
+```bash
+git checkout -b skill/<name>              # a topic branch, not main
+git add -A && git commit -m "..."         # skill + docs together, in one commit
+git push -u origin skill/<name>
+gh pr create --fill                        # open the PR for review
+```
+
+Keep the skill and its doc update in the **same commit/PR** — never leave the
+README describing a different set of skills than the repo ships. Merge only
+after the PR's checks/review pass.
 
 ## Notes / limits
 
