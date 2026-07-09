@@ -137,6 +137,17 @@ push a half-written skill or a skill that fails the linter. A change is
 "complete" only when (a) the docs are updated (step 6) and (b) the linter
 reports all skills passing.
 
+**Only two kinds of thing may ever reach the remote** (`origin`,
+`github.com/CatPope/doc-skills.git`): **(1) skills** — anything under `skills/`
+plus the `shared/` common layer and the scripts/templates/config they need to
+run — and **(2) repo-internal docs** — files that document the repo itself
+(`README.md`, `LICENSE`, each `SKILL.md`, `shared/README.md`). Nothing else is
+allowed. In particular, **never commit or push**: documents the skills operate
+on or their outputs (`.hwpx`, `.xlsx`, images, `*_변환.hwpx`), any user/work
+data, secrets or credentials, local paths, or temp/scratch/build artifacts —
+these are user data, not repo assets. `.gitignore` enforces this; before adding
+a file ask "is this a skill, or a repo doc?" — if neither, it does not go up.
+
 **Publish through a pull request — never push straight to `main`.** Once the
 change is complete:
 
