@@ -1,58 +1,56 @@
 # doc-skills
 
-Portable [Agent Skills](https://skills.sh) for document work. Each skill is
-**self-contained**: clone the repo, run the skill's `setup` script, and it
-works — no other skills, plugins, or framework required.
+문서 작업을 위한 이식성 높은 [Agent Skills](https://skills.sh) 모음입니다. 각 스킬은
+**자기완결형**입니다 — 레포를 clone하고 스킬의 `setup` 스크립트만 실행하면 바로
+동작하며, 다른 스킬·플러그인·프레임워크가 없어도 됩니다.
 
-## Skills
+## 스킬 목록
 
-| Skill | What it does |
-|-------|--------------|
-| [`hwpx-table-kit`](skills/hwpx-table-kit) | Insert real, editable OWPML tables into an existing Hangul `.hwpx` without corrupting it. The reusable engine. |
-| [`hwpx-image-table-to-table`](skills/hwpx-image-table-to-table) | Recipe: convert a table embedded as an **image** inside a `.hwpx` into a native editable table (optionally pulling data from `.xlsx`). Uses `hwpx-table-kit`. |
+| 스킬 | 설명 |
+|------|------|
+| [`hwpx-table-kit`](skills/hwpx-table-kit) | 기존 한글 `.hwpx` 문서를 손상시키지 않고 편집 가능한 OWPML 표를 삽입합니다. 재사용 엔진. |
+| [`hwpx-image-table-to-table`](skills/hwpx-image-table-to-table) | 레시피: `.hwpx` 안에 **이미지로 들어간 표**를 실제 편집 가능한 표로 변환합니다(필요 시 `.xlsx`에서 데이터 추출). `hwpx-table-kit`을 사용합니다. |
 
-## Quick start (any agent, no base setup)
+## 빠른 시작 (어떤 에이전트든, 사전 설정 불필요)
 
 ```bash
-git clone https://github.com/<owner>/doc-skills.git
+git clone https://github.com/CatPope/doc-skills.git
 cd doc-skills/skills/hwpx-table-kit
-bash setup.sh          # or: pwsh setup.ps1  (Windows)
+bash setup.sh          # 또는(Windows): pwsh setup.ps1
 
-# generate
+# 생성
 python scripts/inject_tables.py --base IN.hwpx --tables tables.json --out OUT.hwpx
-# verify (optional, needs Node)
+# 검증(선택, Node 필요)
 node scripts/verify_hwpx.mjs OUT.hwpx
 ```
 
-See each skill's `SKILL.md` for full instructions.
+자세한 사용법은 각 스킬의 `SKILL.md`를 참고하세요.
 
-## Using with Claude Code / Claude agents
+## Claude Code / Claude 에이전트에서 사용하기
 
-Point your agent at the skill folder, or install into your skills directory:
+에이전트가 스킬 폴더를 바라보게 하거나, 스킬 디렉터리에 설치하세요:
 
 ```bash
-# user-level (all projects)
+# 사용자 레벨(모든 프로젝트)
 cp -r skills/* ~/.claude/skills/
-# or project-level
+# 또는 프로젝트 레벨
 cp -r skills/* .claude/skills/
 ```
 
-The skills are also discoverable via the Skills CLI once published:
-`npx skills add <owner>/doc-skills@hwpx-table-kit`.
+배포 등록 후에는 Skills CLI로도 설치할 수 있습니다:
+`npx skills add CatPope/doc-skills@hwpx-table-kit`
 
-## Requirements
+## 요구 사항
 
-- **Python 3.9+** — table generation (Pillow + openpyxl, installed by `setup`).
-- **Node 18+** — optional, only for roundtrip verification via
-  [`kordoc`](https://www.npmjs.com/package/kordoc).
+- **Python 3.9+** — 표 생성(Pillow + openpyxl, `setup`이 설치).
+- **Node 18+** — 선택. [`kordoc`](https://www.npmjs.com/package/kordoc)을 이용한 roundtrip 검증에만 사용.
 
-## Scope & limits
+## 범위와 한계
 
-These skills generate/repackage HWPX XML directly. They do **not** require or
-automate the Hangul (한글) application. Because of that, always have a human open
-the produced `.hwpx` to confirm the visual result. Merged cells
-(colspan/rowspan) are out of scope for generation.
+이 스킬들은 HWPX XML을 직접 생성·재압축합니다. 한글(한컴오피스) 애플리케이션을
+필요로 하거나 자동화하지 **않습니다**. 그래서 생성된 `.hwpx`는 항상 사람이 한 번
+열어 시각적 결과를 확인해야 합니다. 병합 셀(colspan/rowspan) 생성은 범위 밖입니다.
 
-## License
+## 라이선스
 
 MIT
