@@ -2,7 +2,27 @@ node_modules/
 __pycache__/
 *.pyc
 package-lock.json
-# local test artifacts
+
+# --- Remote scope: ONLY skills + repo-internal docs belong here. ---
+# Documents the skills operate on, their outputs, and any user/work data are
+# NEVER committed (they are user data, not repo assets). Keep example fixtures
+# under a skill's examples/ folder instead.
+*.hwpx
+*.hwp
+*.xlsx
+*.xls
+*.docx
+*.pptx
+*.pdf
+*.bmp
+*.png
+*.jpg
+*.jpeg
 *_변환.hwpx
 *_out.hwpx
+
+# local test artifacts / scratch
 /tmp/
+*.tmp
+*.log
+.env
