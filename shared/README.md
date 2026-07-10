@@ -27,7 +27,7 @@ its own `scripts/`, then walks up to the repo root and adds `shared/` to
 
 ```python
 import sys, os
-sys.path.insert(0, os.path.dirname(__file__))
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 from repo_root import shared_path
 sys.path.insert(0, shared_path(__file__))
 import opc            # imports <repo>/shared/opc.py
