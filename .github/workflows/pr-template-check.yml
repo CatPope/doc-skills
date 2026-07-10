@@ -1,0 +1,43 @@
+name: PR Template Check
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  pr-template-check:
+    name: PR Template Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate PR body against template
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          set -euo pipefail
+          body="$PR_BODY"
+          fail=0
+
+          # 1) 필수 섹션 존재 확인
+          for section in "## 변경 유형" "## 개요" "## 테스트 결과" "## 체크리스트"; do
+            if ! printf '%s' "$body" | grep -qF "$section"; then
+              echo "::error::필수 섹션이 없습니다: $section"
+              fail=1
+            fi
+          done
+
+          # 2) '변경 유형' 섹션에서 최소 1개 체크되었는지 확인
+          change_block=$(printf '%s\n' "$body" | awk '/^## 변경 유형/{f=1;next} /^## /{f=0} f')
+          if ! printf '%s' "$change_block" | grep -qiE '\[x\]'; then
+            echo "::error::'변경 유형'에서 최소 1개 항목을 [x]로 체크하세요."
+            fail=1
+          fi
+
+          if [ "$fail" -ne 0 ]; then
+            echo "PR 템플릿 규칙을 준수하지 않았습니다. 본문을 수정하세요."
+            exit 1
+          fi
+          echo "PR 템플릿 검증 통과"
