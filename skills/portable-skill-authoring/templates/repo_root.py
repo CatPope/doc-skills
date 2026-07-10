@@ -12,24 +12,23 @@ Usage:
     sys.path.insert(0, shared_path(__file__))
     import opc            # a module living in <repo>/shared/opc.py
 """
-import os
+from pathlib import Path
 
 
 def find_repo_root(start=None):
-    d = os.path.abspath(start if start else os.path.dirname(__file__))
-    if os.path.isfile(d):
-        d = os.path.dirname(d)
+    p = Path(start or __file__).resolve()
+    if p.is_file():
+        p = p.parent
     while True:
-        if os.path.isdir(os.path.join(d, "skills")) and \
-           os.path.isdir(os.path.join(d, "shared")):
-            return d
-        parent = os.path.dirname(d)
-        if parent == d:
+        if (p / "skills").is_dir() and (p / "shared").is_dir():
+            return str(p)
+        parent = p.parent
+        if parent == p:
             raise RuntimeError(
-                "repo root not found: no ancestor of {} has both "
-                "skills/ and shared/".format(start or __file__))
-        d = parent
+                f"repo root not found: no ancestor of {start or __file__} has both skills/ and shared/"
+            )
+        p = parent
 
 
 def shared_path(start=None):
-    return os.path.join(find_repo_root(start), "shared")
+    return str(Path(find_repo_root(start)) / "shared")
