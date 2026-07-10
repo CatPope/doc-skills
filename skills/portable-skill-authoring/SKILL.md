@@ -39,7 +39,7 @@ making skills." It bundles a **standard-library-only** linter
 
    ```python
    import sys, os
-   sys.path.insert(0, os.path.dirname(__file__))
+   sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
    from repo_root import shared_path
    sys.path.insert(0, shared_path(__file__))
    import opc          # <repo>/shared/opc.py
